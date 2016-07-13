@@ -1,2 +1,0 @@
-cargo:rustc-link-search=native=/usr/local/Cellar/freetype/2.6.3/lib
-cargo:rustc-link-lib=freetype
