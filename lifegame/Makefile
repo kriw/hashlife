@@ -1,6 +1,6 @@
 DCC =dmd
 DFLAGS = -w
-SRC = $(wildcard ./src/*.d ./src/simple/*.d)
+SRC = $(wildcard ./src/*.d ./src/simple/*.d ./src/hashlife/*.d)
 OBJ = $(SRC:.d=.o)
 
 all:

@@ -1,5 +1,7 @@
 import std.stdio;
 import simple;
+import hashlife;
+
 void main(){
 
     writeln("Conway's lifegame");
