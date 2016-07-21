@@ -2,14 +2,75 @@ module hashlife.NodeManager;
 
 import std.stdio;
 import std.bigint;
+
 import hashlife.Node;
+import hashlife.Field;
 
 class NodeManager{
     Node _node;
-    Node[BigInt] memo;
+    Node[long][long] memo;
+    Field field;
+
     this(Node n){
         _node = n;
+        int size = 1<<(n.height-1);
+        field = new Field(size,size);
+        setFieldToNode();
     }
+
+    void update(){
+        _node = nextGen(_node);
+        draw();
+    }
+
+    void draw(){
+        setNodeToField();
+        field.draw();
+    }
+
+    void setFieldToNode(){
+        int row = field.getRow();
+        int col = field.getCol();
+        recSetFieldToNode(_node,0,col-1,0,row-1);
+    }
+
+    void recSetFieldToNode(Node n,int x1,int x2,int y1,int y2){
+        if(n.level < n.height){
+            recSetFieldToNode(n.nw,x1,(x1+x2)/2,y1,(y1+y2)/2);
+            recSetFieldToNode(n.ne,x1,(x1+x2)/2,(y1+y2+1)/2,y2);
+            recSetFieldToNode(n.sw,(x1+x2+1)/2,x2,y1,(y1+y2)/2);
+            recSetFieldToNode(n.se,(x1+x2+1)/2,x2,(y1+y2+1)/2,y2);
+        }else{
+            assert(x1==x2 && y1==y2,"Index is incoreect.");
+            assert(n.height == n.level,"Height and length are different.");
+            if( field.getCell(x1,y1) == 1){
+                /* writef("x1: %d y1: %d\n",x1,y1); */
+            }
+            n.cell = field.getCell(x1,y1);
+        }
+    }
+    void setNodeToField(){
+        int row = field.getRow();
+        int col = field.getCol();
+        recSetNodeToField(_node,0,col-1,0,row-1);
+    }
+
+    void recSetNodeToField(Node n,int x1,int x2,int y1,int y2){
+        if(n.level < n.height){
+            recSetNodeToField(n.nw,x1,(x1+x2)/2,y1,(y1+y2)/2);
+            recSetNodeToField(n.ne,x1,(x1+x2)/2,(y1+y2+1)/2,y2);
+            recSetNodeToField(n.sw,(x1+x2+1)/2,x2,y1,(y1+y2)/2);
+            recSetNodeToField(n.se,(x1+x2+1)/2,x2,(y1+y2+1)/2,y2);
+        }else{
+            writef("x1: %d y1: %d\n",x1,y1);
+            writef("x2: %d y2: %d\n",x2,y2);
+            assert(x1==x2 && y1==y2,"Index is incoreect.");
+            assert(n.height == n.level,"Height and length are different.");
+            field.setCell(x1,y1,n.cell);
+        }
+    }
+
+
     Node createNode(Node nw,Node ne,Node sw,Node se){
         assert( nw.level == ne.level &&
                 ne.level == sw.level &&
@@ -21,7 +82,8 @@ class NodeManager{
         ret.sw = sw;
         ret.se = se;
 
-        ret.calcHash();
+        ret.calcHash1();
+        ret.calcHash2();
         return ret;
     }
 
@@ -36,15 +98,12 @@ class NodeManager{
 
 
     void extendNode(){
-        Node[] emp = new Node[12];
+        Node emp = new Node(_node.level+1);
         int level = _node.level;
-        foreach(ref n ; emp){
-            n = new Node(level+1);
-        }
-        _node.sw = createNode(_node.sw,emp[0],emp[1],emp[2]);
-        _node.se = createNode(emp[3],_node.se,emp[4],emp[5]);
-        _node.nw = createNode(emp[6],emp[7],_node.sw,emp[8]);
-        _node.ne = createNode(emp[9],emp[10],emp[11],_node.sw);
+        _node.sw = createNode(_node.sw,emp,emp,emp);
+        _node.se = createNode(emp,_node.se,emp,emp);
+        _node.nw = createNode(emp,emp,_node.sw,emp);
+        _node.ne = createNode(emp,emp,emp,_node.sw);
     }
 
     Node centeredSubnode(Node node){
@@ -68,9 +127,9 @@ class NodeManager{
     }
 
     Node nextGen(Node node){
-        writeln(node.level);
-        if( node.getHash() in memo ) {
-            return memo[node.getHash()];
+        if( node.getHash1() in memo &&
+                node.getHash2() in memo[node.getHash1()] ) {
+            return memo[node.getHash1()][node.getHash2()];
         }
         if( this._node.height-node.level == 2){ int p00 = node.nw.nw.cell;
 
@@ -128,7 +187,7 @@ class NodeManager{
             s3 = s2 & downright;
             s2 = ( s1 & downright ) ^ s2;
             s1 = s1 ^ downright;
-            return _node;
+            return createLeaf( (s2 & p) | s3 );
         }else{
             with( node ){
                 Node 
@@ -148,7 +207,7 @@ class NodeManager{
                         nextGen(createNode( n10, n11, n20, n21)),
                         nextGen(createNode( n11, n12, n21, n22))
                         );
-                memo[node.getHash()] = next;
+                memo[node.getHash1()][node.getHash2()] = next;
                 return next;
             }
 
