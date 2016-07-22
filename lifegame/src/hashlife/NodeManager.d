@@ -2,9 +2,9 @@ module hashlife.NodeManager;
 
 import std.stdio;
 import std.bigint;
-
 import hashlife.Node;
 import hashlife.Field;
+import derelict.sdl2.sdl;
 
 class NodeManager{
     Node _node;

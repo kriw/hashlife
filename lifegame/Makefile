@@ -1,10 +1,11 @@
 DCC =dmd
 DFLAGS = -w
-SRC = $(wildcard ./src/*.d ./src/simple/*.d ./src/hashlife/*.d)
+LIB = $(wildcard ./lib/*.a)
+SRC = $(wildcard ./src/*.d ./src/simple/*.d ./src/hashlife/*.d ./src/base/*.d)
 OBJ = $(SRC:.d=.o)
 
 all:
-	$(DCC) $(DFLAGS) $(SRC) -of./bin/life
+	$(DCC) $(DFLAGS) $(SRC) -L$(LIB)  -of./bin/life
 	rm ./bin/*.o
 
 clean:
