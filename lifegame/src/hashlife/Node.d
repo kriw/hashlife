@@ -9,6 +9,7 @@ class Node{
     private long[2] hash;
     int level;
     public int cell;
+    public bool mark;
 
     static const long MOD1 = 1000000007;
     static const long MOD2 = 1000000009;
@@ -21,7 +22,8 @@ class Node{
 
     this(int level,bool isInit = true){
         this.level = level;
-        hash = [0,0];
+        hash = [-1,-1];
+        mark = false;
         if( isInit ){
             Init(level);
         }else{
@@ -29,7 +31,7 @@ class Node{
     }
 
     long calcHash1(){
-        if( level == height ) return hash[0];
+        if( level == height ) return this.cell;
         if( hash[0] == 0){
             long h1 = this.nw.calcHash1();
             long h2 = this.ne.calcHash1();
@@ -44,7 +46,7 @@ class Node{
     }
 
     long calcHash2(){
-        if( level == height ) return hash[1];
+        if( level == height ) return this.cell;
         if( hash[1] == 0){
             long h1 = this.nw.calcHash2();
             long h2 = this.ne.calcHash2();

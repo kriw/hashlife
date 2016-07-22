@@ -9,15 +9,23 @@ class Field{
     private int row;
     private int col;
     private int now;
+    private int startX;
+    private int startY;
 
     public:
     this(int row,int col){
         field = new int[ (row+2)*(col+2)*2 ];
         this.row = row;
         this.col = col;
+        this.startY = row/4;
+        this.startX = col/4;
         this.now = 0;
 
-        setFieldFromFile("Resource/glider_gun.txt",1,1);
+        /* setFieldFromFile("Resource/glider_gun.txt",1,1); */
+        setCell(startX+2,startY+2,1);
+        setCell(startX+2,startY+3,1);
+        setCell(startX+3,startY+2,1);
+        setCell(startX+3,startY+3,1);
     }
 
     void draw(){

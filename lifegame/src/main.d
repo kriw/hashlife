@@ -10,6 +10,7 @@ void main(){
     NodeManager nm = new NodeManager(n);
 
     while(true){
+        nm.draw();
         nm.update();
         writeln("Press Enter");
         readln();
