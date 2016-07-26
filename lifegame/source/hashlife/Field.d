@@ -2,40 +2,44 @@ module hashlife.Field;
 
 import std.stdio;
 import std.conv;
+import std.typecons;
 import dlangui;
 
 class Field{
 
+    alias Size = Tuple!(int, "x",int, "y");
     private int[] field;
-    private int row;
-    private int col;
+    private int size;
     private int now;
-    private int startX;
-    private int startY;
-    private immutable int cellsize = 10;
+    Size start;
+    Size screen;
+    private int cellsize = 10;
 
     public:
-    this(int row,int col){
-        field = new int[ (row+2)*(col+2)*2 ];
-        this.row = row;
-        this.col = col;
-        this.startY = row/4;
-        this.startX = col/4;
+    this(int ss,int sx,int sy){
+        this.size = ss;
+        this.start.y = this.size/4;
+        this.start.x = this.size/4;
         this.now = 0;
+        field = new int[ (size+2)*(size+2)*2 ];
+        setScreen(sx,sy);
+        setFieldFromFile("Resource/glider_gun.txt",start.x+1,start.y+1);
 
-        setFieldFromFile("Resource/glider_gun.txt",startX+1,startY+1);
-        /* setCell(startX+2,startY+2,1); */
-        /* setCell(startX+2,startY+3,1); */
-        /* setCell(startX+3,startY+2,1); */
-        /* setCell(startX+3,startY+3,1); */
+    }
+
+    public void setScreen(int x,int y){
+        screen.x = x;
+        screen.y = y;
+        auto temp = min(screen.x,screen.y);
+        cellsize = 2*temp/this.size;
     }
 
     public void drawGUI(DrawBuf buf){
-        foreach(i;startX..row-startX){
-            foreach(j;startY..col-startY){
+        foreach(i;start.x..size-start.x){
+            foreach(j;start.y..size-start.y){
                 if(getCell(j,i)){
-                    int nx = j - startX;
-                    int ny = i - startY;
+                    int nx = j - start.x;
+                    int ny = i - start.y;
                     buf.fillRect(Rect(nx*cellsize,ny*cellsize,(nx+1)*cellsize,(ny+1)*cellsize),0x00ff00);
                 }
             }
@@ -43,8 +47,8 @@ class Field{
     }
 
     void draw(){
-        foreach(i;0..row){
-            foreach(j;0..col){
+        foreach(i;0..size){
+            foreach(j;0..size){
                 write(getCell(j,i));
             }
             writeln("");
@@ -52,16 +56,19 @@ class Field{
     }
 
     int getRow(){
-        return row;
+        return size;
     }
+
     int getCol(){
-        return col;
+        return size;
     }
+
     void setFieldFromFile(string fname,int x,int y){
         auto f1 = File(fname,"r");
         string s = f1.readln();
-        int row = 0;
+        int sz = 0;
 
+        writef("size: %d\n",size);
         while( s.length > 1){
             auto len = s.length;
             foreach(col;0..len){
@@ -69,10 +76,11 @@ class Field{
                 int c = to!int(s[col]-'0');
                 if( c == 1 || c == 0){
                     write(c);
-                    setCell( to!int(x+col) ,y+row,c);
+                    writef("x+col: %d y+sz: %d\n",x+col,y+sz);
+                    setCell( to!int(x+col),y+sz,c);
                 }
             }
-            row++;
+            sz++;
             s = f1.readln();
         }
     }
@@ -82,7 +90,7 @@ class Field{
     }
 
     int calcPos(int x,int y){
-        return 2*(y+1)*col + x+1;
+        return 2*(y+1)*size + x+1;
     }
 
     int getCell(int x,int y){

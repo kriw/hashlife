@@ -1,4 +1,5 @@
 import std.stdio;
+import std.typecons;
 import simple;
 import hashlife;
 import base;
@@ -11,10 +12,11 @@ extern (C) int UIAppMain(string[] args) {
 
     //tform.instance.uiLanguage = "en";
     Platform.instance.uiTheme = "theme_default";
-    auto window = Platform.instance.createWindow("life game",null,1u,800u,800u);
-    /* auto lifegame = new SimpleLife(60,60); */
+
+    auto sc = Tuple!(int, "x",int, "y")(400,400);
+    auto window = Platform.instance.createWindow("life game",null,1u,sc.x,sc.y);
     Node n = new Node(0);
-    auto lifegame = new NodeManager(n);
+    auto lifegame = new NodeManager(n,sc.x,sc.y);
     window.mainWidget = lifegame;
     window.show;
     return Platform.instance.enterMessageLoop();

@@ -17,57 +17,62 @@ class Node{
 
     static const ulong a  = 7;
     static const ulong P1 = 2;
+    private bool onHash1;
+    private bool onHash2;
 
     this(int level,bool isInit = true){
         this.level = level;
         hash = [-1,-1];
         mark = false;
+        onHash1 = false;
+        onHash2 = false;
         if( isInit ){
             Init(level);
-            calcHash1();
-            calcHash2();
-        }else{
+            calcHash1(true);
+            calcHash2(true);
         }
     }
 
-    ulong calcHash1(){
+    ulong calcHash1(bool isForce=false){
         if( level == height ) return this.cell;
-        /* if( hash[0] == 0){ */
+        if( isForce || !onHash1){
             ulong B = pow(4,(height - this.nw.level),MOD1);
             ulong Q0 = 1;
             ulong Q1 = pow(P1,B,MOD1);
             ulong Q2 = pow(Q1,2,MOD1);
             ulong Q3 = pow(Q1,3,MOD1);
-            ulong h1 = this.nw.calcHash1()*Q0%MOD1;
-            ulong h2 = this.ne.calcHash1()*Q1%MOD1;
-            ulong h3 = this.sw.calcHash1()*Q2%MOD1;
-            ulong h4 = this.se.calcHash1()*Q3%MOD1;
+            ulong h1 = this.nw.calcHash1(isForce)*Q0%MOD1;
+            ulong h2 = this.ne.calcHash1(isForce)*Q1%MOD1;
+            ulong h3 = this.sw.calcHash1(isForce)*Q2%MOD1;
+            ulong h4 = this.se.calcHash1(isForce)*Q3%MOD1;
             ulong h =  h1 + h2 + h3  + h4 + a;
             hash[0] = h % MOD1;
+            onHash1 = true;
             return hash[0];
-        /* }else{ */
-        /*     return hash[0]; */
-        /* } */
+        }else{
+            return hash[0];
+        }
     }
 
-    ulong calcHash2(){
+    ulong calcHash2(bool isForce=false){
         if( level == height ) return this.cell;
-        /* if( hash[1] == 0){ */
+        if( isForce || !onHash2){
             ulong B = pow(4,(height - this.nw.level),MOD2);
             ulong Q0 = 1;
             ulong Q1 = pow(P1,B,MOD2);
             ulong Q2 = pow(Q1,2,MOD2);
             ulong Q3 = pow(Q1,3,MOD2);
-            ulong h1 = this.nw.calcHash2()*Q0%MOD2;
-            ulong h2 = this.ne.calcHash2()*Q1%MOD2;
-            ulong h3 = this.sw.calcHash2()*Q2%MOD2;
-            ulong h4 = this.se.calcHash2()*Q3%MOD2;
+            ulong h1 = this.nw.calcHash2(isForce)*Q0%MOD2;
+            ulong h2 = this.ne.calcHash2(isForce)*Q1%MOD2;
+            ulong h3 = this.sw.calcHash2(isForce)*Q2%MOD2;
+            ulong h4 = this.se.calcHash2(isForce)*Q3%MOD2;
             ulong h =  h1 + h2  + h3  + h4 + a;
             hash[1] = h % MOD2;
+            onHash2 = true;
             return hash[1];
-        /* }else{ */
-        /*     return hash[1]; */
-        /* } */
+        }else{
+            return hash[1];
+        }
     }
     void Init(int level){
 

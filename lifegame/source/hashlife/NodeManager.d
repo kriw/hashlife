@@ -11,12 +11,10 @@ class NodeManager : Widget{
     Node[ulong][ulong] memo;
     public Field field;
 
-    AnimationHelper _animation;
-
-    this(Node n){
+    this(Node n,int sizex,int sizey){
         _node = n;
         int size = 1<<(n.height);
-        field = new Field(size,size);
+        field = new Field(size,sizex,sizey);
         setFieldToNode();
     }
 
@@ -44,8 +42,8 @@ class NodeManager : Widget{
         int row = field.getRow();
         int col = field.getCol();
         recSetFieldToNode(_node,-1,col-1,-1,row-1);
-        _node.calcHash1();
-        _node.calcHash2();
+        _node.calcHash1(true);
+        _node.calcHash2(true);
     }
 
     void recSetFieldToNode(Node n,int x1,int x2,int y1,int y2){
@@ -57,17 +55,7 @@ class NodeManager : Widget{
         }else{
             assert(x2-x1==1 && y2-y1==1,"Index is incoreect.");
             assert(n.height == n.level,"Height and length are different.");
-            /* if( field.getCell(x1,y1) == 1){ */
-            /*     writef("x1: %d y1: %d\n",x1,y1); */
-            /* } */
             n.cell = field.getCell(x2,y2);
-            /* if(n.cell == 1){ */
-            /*     n.mark = true; */
-            /*     writeln("===SET==="); */
-            /*     writef("x1: %d y1: %d\n",x1,y1); */
-            /*     writef("x2: %d y2: %d\n",x2,y2); */
-            /*     writeln("========="); */
-            /* } */
         }
     }
     void setNodeToField(){
@@ -83,8 +71,6 @@ class NodeManager : Widget{
             recSetNodeToField(n.sw,x1,(x1+x2)/2,(y1+y2+1)/2,y2);
             recSetNodeToField(n.se,(x1+x2+1)/2,x2,(y1+y2+1)/2,y2);
         }else{
-            /* writef("x1: %d y1: %d\n",x1,y1); */
-            /* writef("x2: %d y2: %d\n",x2,y2); */
             assert(x1==x2 && y1==y2,"Index is incoreect.");
             assert(n.height == n.level,"Height and length are different.");
             field.setCell(x1,y1,n.cell);
@@ -97,14 +83,16 @@ class NodeManager : Widget{
                 ne.level == sw.level &&
                 sw.level == se.level , "nodes level are different" );
         int level = nw.level;
-        Node ret = new Node(level - 1);
+        bool isInit = false;
+        bool isForce = false;
+        Node ret = new Node(level - 1,isInit);
         ret.nw = nw;
         ret.ne = ne;
         ret.sw = sw;
         ret.se = se;
 
-        ret.calcHash1();
-        ret.calcHash2();
+        ret.calcHash1(isForce);
+        ret.calcHash2(isForce);
         return ret;
     }
 
@@ -115,8 +103,8 @@ class NodeManager : Widget{
         ret.sw.cell = cells >> 1 & 1;
         ret.se.cell = cells & 1;
 
-        ret.calcHash1();
-        ret.calcHash2();
+        ret.calcHash1(true);
+        ret.calcHash2(true);
         return ret;
     }
 
@@ -134,8 +122,8 @@ class NodeManager : Widget{
         pEmp.se = createNode(_node.se,emp,emp,emp);
 
         _node = pEmp;
-        _node.calcHash1();
-        _node.calcHash2();
+        _node.calcHash1(true);
+        _node.calcHash2(true);
     }
 
     Node centeredSubnode(Node node){
@@ -161,7 +149,6 @@ class NodeManager : Widget{
     Node nextGen(Node node){
         if( node.getHash1() in memo &&
                 node.getHash2() in memo[node.getHash1()] ) {
-            Log.e(memo.length);
             return memo[node.getHash1()][node.getHash2()];
         }
         if( this._node.height-node.level == 2){ 
