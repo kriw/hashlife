@@ -46,15 +46,6 @@ class Field{
         }
     }
 
-    void draw(){
-        foreach(i;0..size){
-            foreach(j;0..size){
-                write(getCell(j,i));
-            }
-            writeln("");
-        }
-    }
-
     int getRow(){
         return size;
     }
@@ -68,15 +59,12 @@ class Field{
         string s = f1.readln();
         int sz = 0;
 
-        writef("size: %d\n",size);
         while( s.length > 1){
             auto len = s.length;
             foreach(col;0..len){
 
                 int c = to!int(s[col]-'0');
                 if( c == 1 || c == 0){
-                    write(c);
-                    writef("x+col: %d y+sz: %d\n",x+col,y+sz);
                     setCell( to!int(x+col),y+sz,c);
                 }
             }

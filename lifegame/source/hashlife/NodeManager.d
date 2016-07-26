@@ -33,11 +33,6 @@ class NodeManager : Widget{
         extendNode();
     }
 
-    void draw(){
-        setNodeToField();
-        field.draw();
-    }
-
     void setFieldToNode(){
         int row = field.getRow();
         int col = field.getCol();

@@ -6,22 +6,29 @@ import dlangui;
 
 class SimpleLife : Widget{
 
-    int row;
-    int col;
+    int size;
+    int screenX,screenY;
     int cellsize = 10;
     Field field;
 
 public:
-    this(int row,int col){
-        field = new Field(row,col);
-        this.row = row;
-        this.col = col;
+    this(int size,int sx,int sy){
+        field = new Field(size,size);
+        this.screenX = sx;
+        this.screenY = sy;
+        this.size = size;
+        int temp  = min(screenX,screenY);
+        cellsize = temp / size;
+    }
+
+    override @property bool animating(){
+        return true;
     }
 
     override void onDraw(DrawBuf buf){
         update();
-        foreach(i ; 0..row){
-            foreach(j ; 0..col){
+        foreach(i ; 0..size){
+            foreach(j ; 0..size){
                 if(field.getNowCell(j,i)){
                     draw(buf,j,i);
                 }
@@ -34,8 +41,8 @@ public:
     }
 
     void update(){
-        foreach(i ; 0..row){
-            foreach(j ; 0..col){
+        foreach(i ; 0..size){
+            foreach(j ; 0..size){
                 field.update(j,i);
             }
         }
@@ -43,8 +50,8 @@ public:
     }
 
     void output(){
-        foreach(i ; 0..row){
-            foreach(j ; 0..col){
+        foreach(i ; 0..size){
+            foreach(j ; 0..size){
                 write( field.getNowCell(j,i) );
             }
             writeln("");
@@ -84,7 +91,6 @@ public:
 
                     int c = to!int(s[col]-'0');
                     if( c == 1 || c == 0){
-                        write(c);
                         setNowCell( to!int(x+col) ,y+row,c);
                     }
                 }
