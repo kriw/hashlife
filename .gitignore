@@ -5,4 +5,6 @@ __dummy.html
 *.obj
 
 ./.DS_Store
+./*.DS_Store
+./bin
 ./lifegame/.DS_Store
