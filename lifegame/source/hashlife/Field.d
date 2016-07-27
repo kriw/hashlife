@@ -27,8 +27,6 @@ class Field{
 
     }
 
-    int getStartX(){ return start.x; }
-    int getStartY(){ return start.y; }
     int getCellSize(){ return cellsize; }
 
     public void setScreen(int x,int y){
@@ -38,23 +36,7 @@ class Field{
         cellsize = 2*temp/this.size;
     }
 
-    public void drawGUI(DrawBuf buf){
-        foreach(i;start.x..size-start.x){
-            foreach(j;start.y..size-start.y){
-                if(getCell(j,i)){
-                    int nx = j - start.x;
-                    int ny = i - start.y;
-                    buf.fillRect(Rect(nx*cellsize,ny*cellsize,(nx+1)*cellsize,(ny+1)*cellsize),0x00ff00);
-                }
-            }
-        }
-    }
-
-    int getRow(){
-        return size;
-    }
-
-    int getCol(){
+    int getSize(){
         return size;
     }
 
@@ -75,10 +57,6 @@ class Field{
             sz++;
             s = f1.readln();
         }
-    }
-
-    void nextGen(){
-        now = (now+1)%2;
     }
 
     int calcPos(int x,int y){

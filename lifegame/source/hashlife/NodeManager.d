@@ -1,39 +1,29 @@
 module hashlife.NodeManager;
 
 import std.stdio;
-import std.bigint;
-import std.container;
-import std.typecons;
+
+import hashlife.NodeDraw;
 import hashlife.Node;
 import hashlife.Field;
+
 import dlangui;
 
 class NodeManager : Widget{
     Node _node;
+    NodeDraw drawer;
     Node[ulong][ulong] memo;
-    alias ht = Tuple!(ulong,ulong);
-    RedBlackTree!ht empList;
     public Field field;
-    private immutable drawStep = 1;
-    private int step = 0;
-
-    private int startX,startY,cellsize;
 
     this(Node n,int sizex,int sizey){
         _node = n;
         int size = 1<<(n.height);
         field = new Field(size,sizex,sizey);
         setFieldToNode();
-        startX = field.getStartX();
-        startY = field.getStartY();
-        cellsize = field.getCellSize();
 
-        empList = new RedBlackTree!ht();
-        Node temp = new Node(0);
-        while(temp.nw !is null){
-            empList.insert( ht(temp.calcHash1(),temp.calcHash2()) );
-            temp = temp.nw;
-        }
+        auto start = field.getSize()/4;
+        auto cellsize = field.getCellSize();
+        drawer = new NodeDraw(_node.height,start,cellsize);
+        
     }
 
     override @property bool animating(){
@@ -41,12 +31,8 @@ class NodeManager : Widget{
     }
 
     override void onDraw(DrawBuf buf){
-        int row = field.getRow();
-        int col = field.getCol();
-        draw(_node,-1,col-1,-1,row-1,buf);
-        foreach(i;0..drawStep){
-            update();
-        }
+        drawer.draw(_node,buf);
+        update();
     }
 
     void update(){
@@ -54,28 +40,7 @@ class NodeManager : Widget{
         extendNode();
     }
 
-    void draw(Node n,int x1,int x2,int y1,int y2,DrawBuf buf){
-        if( ht(n.getHash1(),n.getHash2()) in empList ) {
-            return;
-        }
-
-        if(n.level < n.height){
-            draw(n.nw,x1,(x1+x2)/2,y1,(y1+y2)/2,buf);
-            draw(n.ne,(x1+x2)/2,x2,y1,(y1+y2)/2,buf);
-            draw(n.sw,x1,(x1+x2)/2,(y1+y2)/2,y2,buf);
-            draw(n.se,(x1+x2)/2,x2,(y1+y2)/2,y2,buf);
-        }else{
-            assert(x2-x1==1 && y2-y1==1,"Index is incoreect.");
-            assert(n.height == n.level,"Height and length are different.");
-            int nx = x2 - startX;
-            int ny = y2 - startY;
-            if( n.cell == 1){
-                buf.fillRect(Rect(nx*cellsize,ny*cellsize,(nx+1)*cellsize,(ny+1)*cellsize),0x00ff00);
-            }
-        }
-    }
-
-    void setFieldToNode(){
+        void setFieldToNode(){
         int row = field.getRow();
         int col = field.getCol();
         recSetFieldToNode(_node,-1,col-1,-1,row-1);
@@ -95,6 +60,7 @@ class NodeManager : Widget{
             n.cell = field.getCell(x2,y2);
         }
     }
+
     void setNodeToField(){
         int row = field.getRow();
         int col = field.getCol();
