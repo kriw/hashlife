@@ -13,7 +13,7 @@ class Field{
     private int now;
     Size start;
     Size screen;
-    private int cellsize = 10;
+    private int cellsize;
 
     public:
     this(int ss,int sx,int sy){
@@ -26,6 +26,10 @@ class Field{
         setFieldFromFile("Resource/glider_gun.txt",start.x+1,start.y+1);
 
     }
+
+    int getStartX(){ return start.x; }
+    int getStartY(){ return start.y; }
+    int getCellSize(){ return cellsize; }
 
     public void setScreen(int x,int y){
         screen.x = x;

@@ -14,7 +14,7 @@ extern (C) int UIAppMain(string[] args) {
     //tform.instance.uiLanguage = "en";
     Platform.instance.uiTheme = "theme_default";
 
-    auto sc = Tuple!(int, "x",int, "y")(400,400);
+    auto sc = Tuple!(int, "x",int, "y")(800,800);
     auto window = Platform.instance.createWindow("life game",null,1u,sc.x,sc.y);
     /* string lifestyle = "Simple"; */
     string lifestyle = "HashLife";
