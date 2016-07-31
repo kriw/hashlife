@@ -11,8 +11,9 @@ import dlangui;
 class NodeManager : Widget{
     Node _node;
     NodeDraw drawer;
-    Node[ulong][ulong] memo;
+    Node[ulong][ulong][10] memo;
     public Field field;
+    int speed;
 
     this(Node n,int sizex,int sizey){
         _node = n;
@@ -24,6 +25,7 @@ class NodeManager : Widget{
         auto cellsize = field.getCellSize();
         drawer = new NodeDraw(_node.height,start,cellsize);
         
+        speed = 1;
     }
 
     override @property bool animating(){
@@ -36,13 +38,13 @@ class NodeManager : Widget{
     }
 
     void update(){
-        _node = nextGen(_node);
+        _node = nextGen(_node,speed);
         extendNode();
     }
 
         void setFieldToNode(){
-        int row = field.getRow();
-        int col = field.getCol();
+        int row = field.getSize();
+        int col = field.getSize();
         recSetFieldToNode(_node,-1,col-1,-1,row-1);
         _node.calcHash1(true);
         _node.calcHash2(true);
@@ -62,8 +64,8 @@ class NodeManager : Widget{
     }
 
     void setNodeToField(){
-        int row = field.getRow();
-        int col = field.getCol();
+        int row = field.getSize();
+        int col = field.getSize();
         recSetNodeToField(_node,0,col-1,0,row-1);
     }
 
@@ -149,10 +151,10 @@ class NodeManager : Widget{
         }
     }
 
-    Node nextGen(Node node){
-        if( node.getHash1() in memo &&
-                node.getHash2() in memo[node.getHash1()] ) {
-            return memo[node.getHash1()][node.getHash2()];
+    Node nextGen(Node node,int speed){
+        if( node.getHash1() in memo[speed] &&
+                node.getHash2() in memo[speed][node.getHash1()] ) {
+            return memo[speed][node.getHash1()][node.getHash2()];
         }
         if( this._node.height-node.level == 2){ 
 
@@ -223,34 +225,60 @@ class NodeManager : Widget{
 
             int ss3 = ~s3&s2&s1;
             int ss2 = ~s3&s2&(~s1);
-            return memo[node.getHash1()][node.getHash2()] = createLeaf( ( ss2 & p) | ss3 );
+            return memo[speed][node.getHash1()][node.getHash2()] = createLeaf( ( ss2 & p) | ss3 );
 
         }else{
-            with( node ){
-                Node 
+            Node next;
+            if( this._node.height-node.level > 2+speed){
+            /* if(false){ */
+                with( node ){
+                    Node 
                         n00 = centeredSubnode(nw),
-                        n01 = centeredHorizontal(nw, ne),
-                        n02 = centeredSubnode(ne),
+                            n01 = centeredHorizontal(nw, ne),
+                            n02 = centeredSubnode(ne),
 
-                        n10 = centeredVertical(nw, sw),
-                        n11 = centeredSubSubnode( node ),
-                        n12 = centeredVertical(ne, se),
+                            n10 = centeredVertical(nw, sw),
+                            n11 = centeredSubSubnode( node ),
+                            n12 = centeredVertical(ne, se),
 
-                        n20 = centeredSubnode(sw),
-                        n21 = centeredHorizontal(sw,se),
-                        n22 = centeredSubnode(se);
+                            n20 = centeredSubnode(sw),
+                            n21 = centeredHorizontal(sw,se),
+                            n22 = centeredSubnode(se);
 
-                Node next =  createNode(
-                        nextGen(createNode( n00, n01, n10, n11)),
-                        nextGen(createNode( n01, n02, n11, n12)),
-                        nextGen(createNode( n10, n11, n20, n21)),
-                        nextGen(createNode( n11, n12, n21, n22))
-                        );
-                return memo[node.getHash1()][node.getHash2()] = next;
+                    next =  createNode(
+                            nextGen(createNode( n00, n01, n10, n11) ,speed),
+                            nextGen(createNode( n01, n02, n11, n12) ,speed),
+                            nextGen(createNode( n10, n11, n20, n21) ,speed),
+                            nextGen(createNode( n11, n12, n21, n22) ,speed)
+                            );
+                }
+            }else{
+                with( node ){
+                    Node 
+                        n00 = nextGen(nw,speed),
+                            n01 = nextGen( createNode(nw.ne,ne.nw,nw.se,ne.sw) ,speed),
+                            n02 = nextGen(ne ,speed),
+
+                            n10 = nextGen( createNode(nw.sw,nw.se, sw.nw,sw.ne) ,speed),
+                            n11 = nextGen( createNode(nw.se,ne.sw,sw.ne,se.nw ) ,speed),
+                            n12 = nextGen( createNode(ne.sw,ne.se, se.nw,se.ne) ,speed),
+
+                            n20 = nextGen(sw ,speed),
+                            n21 = nextGen( createNode(sw.ne,se.nw,sw.se,se.sw) ,speed),
+                            n22 = nextGen(se ,speed);
+
+                    next =  createNode(
+                            nextGen(createNode( n00, n01, n10, n11) ,speed),
+                            nextGen(createNode( n01, n02, n11, n12) ,speed),
+                            nextGen(createNode( n10, n11, n20, n21) ,speed),
+                            nextGen(createNode( n11, n12, n21, n22) ,speed)
+                            );
+
+                }
             }
-
+            return memo[speed][node.getHash1()][node.getHash2()] = next;
         }
-    }
 
+    }
 }
 
