@@ -23,7 +23,10 @@ class Field{
         this.now = 0;
         field = new int[ (size+2)*(size+2)*2 ];
         setScreen(sx,sy);
-        setFieldFromFile("Resource/glider_gun.txt",start.x+1,start.y+1);
+        /* setFieldFromFile("Resource/glider_gun.txt",start.x+1,start.y+1); */
+        /* setFieldFromFile("Resource/snark.txt",start.x+250,start.y+250); */
+        /* setFieldFromFile("Resource/twinbees.txt",start.x+50,start.y+50); */
+        setFieldFromFile("Resource/rpentmino.txt",start.x+50,start.y+50);
 
     }
 

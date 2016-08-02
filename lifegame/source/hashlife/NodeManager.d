@@ -10,8 +10,10 @@ import dlangui;
 
 class NodeManager : Widget{
     Node _node;
+    Node[] emp;
     NodeDraw drawer;
-    Node[ulong][ulong][10] memo;
+    Node[ulong][ulong] memo;
+    Node[ulong][ulong] memoPow2;
     public Field field;
     int speed;
 
@@ -25,7 +27,15 @@ class NodeManager : Widget{
         auto cellsize = field.getCellSize();
         drawer = new NodeDraw(_node.height,start,cellsize);
         
-        speed = 1;
+        initEmpNode();
+        speed = 0;
+    }
+
+    void initEmpNode(){
+        int templevel = 0;
+        foreach(i; 0.._node.height){
+            emp ~= new Node(i+1);
+        }
     }
 
     override @property bool animating(){
@@ -119,12 +129,11 @@ class NodeManager : Widget{
 
     void extendNode(){
         int level = _node.level;
-        Node emp = new Node(level+1);
         Node pEmp = createEmpNode(0);
-        pEmp.nw = createNode(emp,emp,emp,_node.nw);
-        pEmp.ne = createNode(emp,emp,_node.ne,emp);
-        pEmp.sw = createNode(emp,_node.sw,emp,emp);
-        pEmp.se = createNode(_node.se,emp,emp,emp);
+        pEmp.nw = createNode(emp[level],emp[level],emp[level],_node.nw);
+        pEmp.ne = createNode(emp[level],emp[level],_node.ne,emp[level]);
+        pEmp.sw = createNode(emp[level],_node.sw,emp[level],emp[level]);
+        pEmp.se = createNode(_node.se,emp[level],emp[level],emp[level]);
 
         _node = pEmp;
         _node.calcHash1(true);
@@ -152,11 +161,12 @@ class NodeManager : Widget{
     }
 
     Node nextGen(Node node,int speed){
-        if( node.getHash1() in memo[speed] &&
-                node.getHash2() in memo[speed][node.getHash1()] ) {
-            return memo[speed][node.getHash1()][node.getHash2()];
-        }
+        
         if( this._node.height-node.level == 2){ 
+            if( node.getHash1() in memo &&
+                    node.getHash2() in memo[node.getHash1()] ){
+                return memo[node.getHash1()][node.getHash2()];
+            }
 
             int p00 = node.nw.nw.cell;
             int p01 = node.nw.ne.cell;
@@ -225,12 +235,15 @@ class NodeManager : Widget{
 
             int ss3 = ~s3&s2&s1;
             int ss2 = ~s3&s2&(~s1);
-            return memo[speed][node.getHash1()][node.getHash2()] = createLeaf( ( ss2 & p) | ss3 );
+            return memo[node.getHash1()][node.getHash2()] = createLeaf( ( ss2 & p) | ss3 );
 
         }else{
+            if( node.getHash1() in memo &&
+                    node.getHash2() in memo[node.getHash1()] ) {
+                return memo[node.getHash1()][node.getHash2()];
+            }
             Node next;
             if( this._node.height-node.level > 2+speed){
-            /* if(false){ */
                 with( node ){
                     Node 
                         n00 = centeredSubnode(nw),
@@ -252,7 +265,12 @@ class NodeManager : Widget{
                             nextGen(createNode( n11, n12, n21, n22) ,speed)
                             );
                 }
+                return memo[node.getHash1()][node.getHash2()] = next;
             }else{
+                if( node.getHash1() in memo &&
+                        node.getHash2() in memo[node.getHash1()] ) {
+                    return memoPow2[node.getHash1()][node.getHash2()];
+                }
                 with( node ){
                     Node 
                         n00 = nextGen(nw,speed),
@@ -275,10 +293,10 @@ class NodeManager : Widget{
                             );
 
                 }
+                return memoPow2[node.getHash1()][node.getHash2()] = next;
             }
-            return memo[speed][node.getHash1()][node.getHash2()] = next;
-        }
+            }
 
+        }
     }
-}
 
