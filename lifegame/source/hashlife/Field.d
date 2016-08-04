@@ -1,5 +1,8 @@
 module hashlife.Field;
 
+import hashlife.Patterns;
+
+import std.algorithm;
 import std.stdio;
 import std.conv;
 import std.typecons;
@@ -23,10 +26,11 @@ class Field{
         this.now = 0;
         field = new int[ (size+2)*(size+2)*2 ];
         setScreen(sx,sy);
-        /* setFieldFromFile("Resource/glider_gun.txt",start.x+1,start.y+1); */
-        /* setFieldFromFile("Resource/snark.txt",start.x+250,start.y+250); */
-        /* setFieldFromFile("Resource/twinbees.txt",start.x+50,start.y+50); */
-        setFieldFromFile("Resource/rpentmino.txt",start.x+50,start.y+50);
+
+        auto andGate = new ANDGate(1,1,"");
+        auto andGateR = new ANDGate(1,1,"reverse");
+        andGate.setToField(this,3,3);
+        andGate.setToField(this,150,3);
 
     }
 
@@ -35,7 +39,7 @@ class Field{
     public void setScreen(int x,int y){
         screen.x = x;
         screen.y = y;
-        auto temp = min(screen.x,screen.y);
+        int temp = min(screen.x,screen.y);
         cellsize = 2*temp/this.size;
     }
 
@@ -43,24 +47,27 @@ class Field{
         return size;
     }
 
-    void setFieldFromFile(string fname,int x,int y){
-        auto f1 = File(fname,"r");
-        string s = f1.readln();
-        int sz = 0;
-
-        while( s.length > 1){
-            auto len = s.length;
-            foreach(col;0..len){
-
-                int c = to!int(s[col]-'0');
-                if( c == 1 || c == 0){
-                    setCell( to!int(x+col),y+sz,c);
-                }
+    void setField(int[][] pattern,int x,int y){
+        foreach(i;0..pattern.length){
+            foreach(j;0..pattern[i].length){
+                int nx = to!int(j + x);
+                int ny = to!int(i + y);
+                setCell( nx ,ny,pattern[i][j]);
             }
-            sz++;
-            s = f1.readln();
         }
     }
+
+    void setFieldFromFile(string fname,int x,int y,int angle,string option){
+
+        /* auto pat = pm.getPattern(fname,angle); */
+        /*  */
+        /* if( cmp(option , "reverse" ) == 0 ){ */
+        /*     pat = pm.reverse(pat); */
+        /* } */
+
+        /* setField(pat,x,y); */
+    }
+
 
     int calcPos(int x,int y){
         return 2*(y+1)*size + x+1;
