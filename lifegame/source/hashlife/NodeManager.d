@@ -28,7 +28,7 @@ class NodeManager : Widget{
         drawer = new NodeDraw(_node.height,start,cellsize);
         
         initEmpNode();
-        speed = 3;
+        speed = 2;
     }
 
     void initEmpNode(){

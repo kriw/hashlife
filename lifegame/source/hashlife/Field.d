@@ -11,6 +11,7 @@ import dlangui;
 class Field{
 
     alias Size = Tuple!(int, "x",int, "y");
+    alias Pos = Tuple!(int, "x",int, "y");
     private int[] field;
     private int size;
     private int now;
@@ -27,8 +28,45 @@ class Field{
         field = new int[ (size+2)*(size+2)*2 ];
         setScreen(sx,sy);
 
-        auto orGate = new ORGate(0,0,"");
-        orGate.setToField(this,3,3);
+        Pos nandPos;
+        nandPos.x = 105;
+        nandPos.y = 50;
+
+        Pos orPos;
+        orPos.x = 245;
+        orPos.y = 125;
+
+        Pos andGliderPos;
+        andGliderPos.x = 494;
+        andGliderPos.y = 50;
+
+        Pos leftUpPos;
+        leftUpPos.x = 10;
+        leftUpPos.y = 5;
+
+        Pos andGliderLDPos;
+        andGliderLDPos.x = 444;
+        andGliderLDPos.y = 80;
+
+
+        int A = 0;
+        int B = 1;
+        auto andGate = new ANDGate(A,B,"reverse");
+        auto andGate_leftup = new ANDGate(A,B,"");
+        auto notGlider = new Glider("");
+        auto orGate = new ORGate(A,B,"");
+        auto andGlider = new Glider("reverse");
+        auto andGlider_rightDown = new Glider("reverse");
+
+        orGate.setToField(this,orPos.x,orPos.y);
+        notGlider.setToField(this,nandPos.x,nandPos.y);
+        andGate.setToField(this,nandPos.x+52,nandPos.y);
+        /* andGlider.setToField(this,andGliderPos.x, */
+                                 /* andGliderPos.y); */
+        andGate_leftup.setToField(this,leftUpPos.x,
+                                    leftUpPos.y);
+        andGlider_rightDown.setToField(this,
+                andGliderLDPos.x,andGliderLDPos.y);
 
     }
 
