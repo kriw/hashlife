@@ -27,10 +27,8 @@ class Field{
         field = new int[ (size+2)*(size+2)*2 ];
         setScreen(sx,sy);
 
-        auto andGate = new ANDGate(1,1,"");
-        auto andGateR = new ANDGate(1,1,"reverse");
-        andGate.setToField(this,3,3);
-        andGate.setToField(this,150,3);
+        auto orGate = new ORGate(0,0,"");
+        orGate.setToField(this,3,3);
 
     }
 

@@ -1,4 +1,4 @@
-module hashlife.Patterns.ANDGate;
+module hashlife.Patterns.ORGate;
 
 import std.conv;
 
@@ -7,7 +7,7 @@ import hashlife.Patterns.Pattern;
 import hashlife.Patterns.Glider;
 import hashlife.Patterns.Eater;
 
-class ANDGate : Pattern{
+class ORGate : Pattern{
 
     Glider[] glider;
     Eater eater;
@@ -18,6 +18,7 @@ class ANDGate : Pattern{
         string opt2 = B == 0 ? "eater" : "";
         opt1 ~= " " ~ opt;
         opt2 ~= " " ~ opt;
+        glider ~= new Glider("");
         glider ~= new Glider(opt1);
         glider ~= new Glider(opt2);
         glider ~= new Glider("reverse" ~ " " ~ opt);
@@ -25,25 +26,17 @@ class ANDGate : Pattern{
     }
 
     void setToField(ref Field f,int x,int y){
-        int dx = 47;
+        int dx = 40;
         int startPos = f.getSize/4;
         foreach( k ; 0..glider.length ){
             auto pattern = glider[k].getField();
             foreach(i;0..pattern.length){
                 foreach(j;0..pattern[i].length){
-                    int nx = to!int(j + x + startPos + dx * k);
+                    int nx = to!int(j + x + startPos + (dx * k));
+                    nx = k <= 1 ? nx+1 : nx;
                     int ny = to!int(i + y + startPos);
                     f.setCell( nx ,ny,pattern[i][j]);
                 }
-            }
-        }
-
-        auto pattern = eater.getField();
-        foreach(i ; 0..pattern.length){
-            foreach(j;0..pattern[i].length){
-                int nx = to!int(j + x + startPos + 41);
-                int ny = to!int(i + y + startPos + 71);
-                f.setCell( nx ,ny,pattern[i][j]);
             }
         }
     }

@@ -6,7 +6,7 @@ import dlangui;
 
 class Node{
     Node nw,ne,sw,se;
-    public static const int height = 10;
+    public static const int height = 9;
     private ulong[2] hash;
     int level;
     public int cell;
