@@ -28,45 +28,8 @@ class Field{
         field = new int[ (size+2)*(size+2)*2 ];
         setScreen(sx,sy);
 
-        Pos nandPos;
-        nandPos.x = 105;
-        nandPos.y = 50;
-
-        Pos orPos;
-        orPos.x = 245;
-        orPos.y = 125;
-
-        Pos andGliderPos;
-        andGliderPos.x = 494;
-        andGliderPos.y = 50;
-
-        Pos leftUpPos;
-        leftUpPos.x = 10;
-        leftUpPos.y = 5;
-
-        Pos andGliderLDPos;
-        andGliderLDPos.x = 444;
-        andGliderLDPos.y = 80;
-
-
-        int A = 0;
-        int B = 1;
-        auto andGate = new ANDGate(A,B,"reverse");
-        auto andGate_leftup = new ANDGate(A,B,"");
-        auto notGlider = new Glider("");
-        auto orGate = new ORGate(A,B,"");
-        auto andGlider = new Glider("reverse");
-        auto andGlider_rightDown = new Glider("reverse");
-
-        orGate.setToField(this,orPos.x,orPos.y);
-        notGlider.setToField(this,nandPos.x,nandPos.y);
-        andGate.setToField(this,nandPos.x+52,nandPos.y);
-        /* andGlider.setToField(this,andGliderPos.x, */
-                                 /* andGliderPos.y); */
-        andGate_leftup.setToField(this,leftUpPos.x,
-                                    leftUpPos.y);
-        andGlider_rightDown.setToField(this,
-                andGliderLDPos.x,andGliderLDPos.y);
+        auto halfadder = new HalfAdder(1,1);
+        halfadder.setToField(this,5,5);
 
     }
 
@@ -92,18 +55,6 @@ class Field{
             }
         }
     }
-
-    void setFieldFromFile(string fname,int x,int y,int angle,string option){
-
-        /* auto pat = pm.getPattern(fname,angle); */
-        /*  */
-        /* if( cmp(option , "reverse" ) == 0 ){ */
-        /*     pat = pm.reverse(pat); */
-        /* } */
-
-        /* setField(pat,x,y); */
-    }
-
 
     int calcPos(int x,int y){
         return 2*(y+1)*size + x+1;
