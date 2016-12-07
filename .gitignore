@@ -1,10 +1,9 @@
 .dub
+.DS_Store
+bin/
+.gdb_history
 docs.json
 __dummy.html
 *.o
 *.obj
 
-./.DS_Store
-./*.DS_Store
-./bin
-./lifegame/.DS_Store

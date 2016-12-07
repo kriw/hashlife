@@ -20,7 +20,7 @@ class HalfAdder {
         this.B = B;
     }
 
-    void setToField(ref Field field,int x,int y){
+    void setToField(Field field,int x,int y){
         Pos nandPos;
         nandPos.x = 95 + x;
         nandPos.y = 45 + y;
