@@ -7,5 +7,10 @@ Hashlife algorithm implementation.
 - dub  
 
 ## Usage
-Run `dub`
+`$ cd lifegame`
+```
+lifegame/lifegame$ ls
+Resource/            dub.json             dub.selections.json  source/
+```
+`$ dub`
 
