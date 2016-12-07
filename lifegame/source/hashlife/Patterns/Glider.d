@@ -28,7 +28,7 @@ class Glider : Pattern{
 
     }
 
-    void setToField(ref Field f,int x,int y){
+    void setToField(Field f,int x,int y){
         int startPos = f.getSize/4;
         foreach(i;0..pattern.length){
             foreach(j;0..pattern[i].length){

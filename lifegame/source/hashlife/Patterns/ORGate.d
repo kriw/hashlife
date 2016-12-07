@@ -23,7 +23,7 @@ class ORGate : Pattern{
         eater = new Eater("reverse");
     }
 
-    void setToField(ref Field f,int x,int y){
+    void setToField(Field f,int x,int y){
         int dx = 40;
         int startPos = f.getSize/4;
         foreach( k ; 0..glider.length ){
