@@ -13,7 +13,7 @@ class NodeManager : Widget{
     Node[] emp;
     NodeDraw drawer;
     Node[ulong][ulong] memo;
-    Node[ulong][ulong] memoPow2;
+    Node[ulong][ulong][ulong] memoPow2;
     public Field field;
     int speed;
 
@@ -28,7 +28,7 @@ class NodeManager : Widget{
         drawer = new NodeDraw(_node.height,start,cellsize);
         
         initEmpNode();
-        speed = 2;
+        speed = 4;
     }
 
     void initEmpNode(){
@@ -43,16 +43,16 @@ class NodeManager : Widget{
     }
 
     override void onDraw(DrawBuf buf){
-        drawer.draw(_node,buf);
+        drawer.draw(_node, buf);
         update();
     }
 
     void update(){
-        _node = nextGen(_node,speed);
+        _node = nextGen(_node, speed);
         extendNode();
     }
 
-        void setFieldToNode(){
+    void setFieldToNode(){
         int row = field.getSize();
         int col = field.getSize();
         recSetFieldToNode(_node,-1,col-1,-1,row-1);
@@ -100,7 +100,7 @@ class NodeManager : Widget{
         int level = nw.level;
         bool isInit = false;
         bool isForce = false;
-        Node ret = new Node(level - 1,isInit);
+        Node ret = new Node(level - 1, isInit);
         ret.nw = nw;
         ret.ne = ne;
         ret.sw = sw;
@@ -124,7 +124,7 @@ class NodeManager : Widget{
     }
 
     Node createEmpNode(int level){
-        return new Node(level,false);
+        return new Node(level, false);
     }
 
     void extendNode(){
@@ -141,7 +141,7 @@ class NodeManager : Widget{
     }
 
     Node centeredSubnode(Node node){
-        with( node ){
+        with(node) {
             return createNode( nw.se, ne.sw, sw.ne, se.nw);
         }
     }
@@ -155,16 +155,16 @@ class NodeManager : Widget{
     }
 
     Node centeredSubSubnode(Node node) {
-        with( node ){
+        with(node){
             return createNode(nw.se.se, ne.sw.sw, sw.ne.ne, se.nw.nw);
         }
     }
 
     Node nextGen(Node node,int speed){
         
-        if( this._node.height-node.level == 2){ 
-            if( node.getHash1() in memo &&
-                    node.getHash2() in memo[node.getHash1()] ){
+        if(this._node.height-node.level == 2){ 
+            if(node.getHash1() in memo &&
+                    node.getHash2() in memo[node.getHash1()]){
                 return memo[node.getHash1()][node.getHash2()];
             }
 
@@ -235,23 +235,22 @@ class NodeManager : Widget{
 
             int ss3 = ~s3&s2&s1;
             int ss2 = ~s3&s2&(~s1);
-            return memo[node.getHash1()][node.getHash2()] = createLeaf( ( ss2 & p) | ss3 );
+            return memo[node.getHash1()][node.getHash2()] = createLeaf((ss2 & p) | ss3);
 
         }else{
-            if( node.getHash1() in memo &&
-                    node.getHash2() in memo[node.getHash1()] ) {
-                return memo[node.getHash1()][node.getHash2()];
-            }
             Node next;
-            if( this._node.height-node.level > 2+speed){
-                with( node ){
-                    Node 
-                        n00 = centeredSubnode(nw),
+            if(this._node.height-node.level > 2+speed){
+                if(node.getHash1() in memo &&
+                        node.getHash2() in memo[node.getHash1()]) {
+                    return memo[node.getHash1()][node.getHash2()];
+                }
+                with(node){
+                    Node    n00 = centeredSubnode(nw),
                             n01 = centeredHorizontal(nw, ne),
                             n02 = centeredSubnode(ne),
 
                             n10 = centeredVertical(nw, sw),
-                            n11 = centeredSubSubnode( node ),
+                            n11 = centeredSubSubnode(node),
                             n12 = centeredVertical(ne, se),
 
                             n20 = centeredSubnode(sw),
@@ -259,44 +258,44 @@ class NodeManager : Widget{
                             n22 = centeredSubnode(se);
 
                     next =  createNode(
-                            nextGen(createNode( n00, n01, n10, n11) ,speed),
-                            nextGen(createNode( n01, n02, n11, n12) ,speed),
-                            nextGen(createNode( n10, n11, n20, n21) ,speed),
-                            nextGen(createNode( n11, n12, n21, n22) ,speed)
+                            nextGen(createNode(n00, n01, n10, n11) ,speed),
+                            nextGen(createNode(n01, n02, n11, n12) ,speed),
+                            nextGen(createNode(n10, n11, n20, n21) ,speed),
+                            nextGen(createNode(n11, n12, n21, n22) ,speed)
                             );
                 }
                 return memo[node.getHash1()][node.getHash2()] = next;
             }else{
-                if( node.getHash1() in memo &&
-                        node.getHash2() in memo[node.getHash1()] ) {
-                    return memoPow2[node.getHash1()][node.getHash2()];
+                if(node.level in memoPow2 &&
+                        node.getHash1() in memoPow2[node.level] &&
+                            node.getHash2() in memoPow2[node.level][node.getHash1()]) {
+                    return memoPow2[node.level][node.getHash1()][node.getHash2()];
                 }
-                with( node ){
-                    Node 
-                        n00 = nextGen(nw,speed),
-                            n01 = nextGen( createNode(nw.ne,ne.nw,nw.se,ne.sw) ,speed),
-                            n02 = nextGen(ne ,speed),
+                with(node){
+                    Node    n00 = nextGen(nw, speed),
+                            n01 = nextGen(createNode(nw.ne,ne.nw,nw.se,ne.sw), speed),
+                            n02 = nextGen(ne, speed),
 
-                            n10 = nextGen( createNode(nw.sw,nw.se, sw.nw,sw.ne) ,speed),
-                            n11 = nextGen( createNode(nw.se,ne.sw,sw.ne,se.nw ) ,speed),
-                            n12 = nextGen( createNode(ne.sw,ne.se, se.nw,se.ne) ,speed),
+                            n10 = nextGen(createNode(nw.sw, nw.se, sw.nw, sw.ne), speed),
+                            n11 = nextGen(createNode(nw.se, ne.sw, sw.ne, se.nw), speed),
+                            n12 = nextGen(createNode(ne.sw, ne.se, se.nw, se.ne), speed),
 
-                            n20 = nextGen(sw ,speed),
-                            n21 = nextGen( createNode(sw.ne,se.nw,sw.se,se.sw) ,speed),
-                            n22 = nextGen(se ,speed);
+                            n20 = nextGen(sw, speed),
+                            n21 = nextGen(createNode(sw.ne, se.nw, sw.se, se.sw), speed),
+                            n22 = nextGen(se, speed);
 
                     next =  createNode(
-                            nextGen(createNode( n00, n01, n10, n11) ,speed),
-                            nextGen(createNode( n01, n02, n11, n12) ,speed),
-                            nextGen(createNode( n10, n11, n20, n21) ,speed),
-                            nextGen(createNode( n11, n12, n21, n22) ,speed)
+                            nextGen(createNode(n00, n01, n10, n11), speed),
+                            nextGen(createNode(n01, n02, n11, n12), speed),
+                            nextGen(createNode(n10, n11, n20, n21), speed),
+                            nextGen(createNode(n11, n12, n21, n22), speed)
                             );
 
                 }
-                return memoPow2[node.getHash1()][node.getHash2()] = next;
+                return memoPow2[node.level][node.getHash1()][node.getHash2()] = next;
             }
-            }
-
         }
+
     }
+}
 

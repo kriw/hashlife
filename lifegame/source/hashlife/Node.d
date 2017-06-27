@@ -4,13 +4,12 @@ import std.bigint;
 import std.stdio;
 import dlangui;
 
-class Node{
+class Node {
     Node nw,ne,sw,se;
     public static const int height = 10;
     private ulong[2] hash;
     int level;
     public int cell;
-    public bool mark;
 
     static const ulong MOD1 = 1000000007;
     static const ulong MOD2 = 1000000009;
@@ -22,11 +21,10 @@ class Node{
 
     this(int level,bool isInit = true){
         this.level = level;
-        hash = [-1,-1];
-        mark = false;
+        hash = [-1, -1];
         onHash1 = false;
         onHash2 = false;
-        if( isInit ){
+        if(isInit){
             Init(level);
             calcHash1(true);
             calcHash2(true);
@@ -34,18 +32,18 @@ class Node{
     }
 
     ulong calcHash1(bool isForce=false){
-        if( level == height ) return this.cell;
-        if( isForce || !onHash1){
-            ulong B = pow(4,(height - this.nw.level),MOD1);
+        if(level == height) return this.cell;
+        if(isForce || !onHash1) {
+            ulong B = pow(4, (height - this.nw.level), MOD1);
             ulong Q0 = 1;
-            ulong Q1 = pow(P1,B,MOD1);
-            ulong Q2 = pow(Q1,2,MOD1);
-            ulong Q3 = pow(Q1,3,MOD1);
-            ulong h1 = this.nw.calcHash1(isForce)*Q0%MOD1;
-            ulong h2 = this.ne.calcHash1(isForce)*Q1%MOD1;
-            ulong h3 = this.sw.calcHash1(isForce)*Q2%MOD1;
-            ulong h4 = this.se.calcHash1(isForce)*Q3%MOD1;
-            ulong h =  h1 + h2 + h3  + h4 + a;
+            ulong Q1 = pow(P1, B, MOD1);
+            ulong Q2 = pow(Q1, 2, MOD1);
+            ulong Q3 = pow(Q1, 3, MOD1);
+            ulong h1 = this.nw.calcHash1(isForce) * Q0 % MOD1;
+            ulong h2 = this.ne.calcHash1(isForce) * Q1 % MOD1;
+            ulong h3 = this.sw.calcHash1(isForce) * Q2 % MOD1;
+            ulong h4 = this.se.calcHash1(isForce) * Q3 % MOD1;
+            ulong h =  h1 + h2 + h3 + h4 + a;
             hash[0] = h % MOD1;
             onHash1 = true;
             return hash[0];
@@ -55,18 +53,18 @@ class Node{
     }
 
     ulong calcHash2(bool isForce=false){
-        if( level == height ) return this.cell;
-        if( isForce || !onHash2){
-            ulong B = pow(4,(height - this.nw.level),MOD2);
+        if(level == height) return this.cell;
+        if(isForce || !onHash2){
+            ulong B = pow(4, (height - this.nw.level), MOD2);
             ulong Q0 = 1;
-            ulong Q1 = pow(P1,B,MOD2);
-            ulong Q2 = pow(Q1,2,MOD2);
-            ulong Q3 = pow(Q1,3,MOD2);
-            ulong h1 = this.nw.calcHash2(isForce)*Q0%MOD2;
-            ulong h2 = this.ne.calcHash2(isForce)*Q1%MOD2;
-            ulong h3 = this.sw.calcHash2(isForce)*Q2%MOD2;
-            ulong h4 = this.se.calcHash2(isForce)*Q3%MOD2;
-            ulong h =  h1 + h2  + h3  + h4 + a;
+            ulong Q1 = pow(P1, B, MOD2);
+            ulong Q2 = pow(Q1, 2, MOD2);
+            ulong Q3 = pow(Q1, 3, MOD2);
+            ulong h1 = this.nw.calcHash2(isForce) * Q0 % MOD2;
+            ulong h2 = this.ne.calcHash2(isForce) * Q1 % MOD2;
+            ulong h3 = this.sw.calcHash2(isForce) * Q2 % MOD2;
+            ulong h4 = this.se.calcHash2(isForce) * Q3 % MOD2;
+            ulong h =  h1 + h2 + h3 + h4 + a;
             hash[1] = h % MOD2;
             onHash2 = true;
             return hash[1];
@@ -101,7 +99,7 @@ class Node{
     }
 }
 
-ulong pow(ulong a,ulong b,ulong mod){
+ulong pow(ulong a, ulong b, ulong mod){
     ulong ret = 1;
     for(;b>0;b>>=1){
         if(b&1){

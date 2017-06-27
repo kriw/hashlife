@@ -53,13 +53,14 @@ private:
             int nx = x2 - start;
             int ny = y2 - start;
             if( n.cell == 1){
-                buf.fillRect(Rect(nx*cellSize,ny*cellSize,(nx+1)*cellSize,(ny+1)*cellSize),0x00ff00);
+                buf.fillRect(Rect(nx*cellSize, ny*cellSize, (nx+1)*cellSize, (ny+1)*cellSize), 0x00ff00);
             }
         }
     }
 
 public:
     void draw(Node n,DrawBuf buf){
+        buf.fillRect(Rect(0, 0, fieldSize*cellSize, fieldSize*cellSize), 0x000000);
         drawRec(n,-1,fieldSize-1,-1,fieldSize-1,buf);
     }
 }
