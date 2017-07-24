@@ -16,9 +16,9 @@ extern (C) int UIAppMain(string[] args) {
     Platform.instance.uiTheme = "theme_default";
 
     int settingWidth = 200;
-    auto lifesc = Tuple!(int, "x",int, "y")(600,600);
+    auto lifesc = Tuple!(int, "x", int, "y")(600, 600);
     auto sc = Tuple!(int, "x",int, "y")(lifesc.x+settingWidth,lifesc.y);
-    auto window = Platform.instance.createWindow("life game",null,1u,sc.x,sc.y);
+    auto window = Platform.instance.createWindow("life game", null, 1u, sc.x, sc.y);
 
     /* string lifestyle = "Simple"; */
 
@@ -51,7 +51,7 @@ extern (C) int UIAppMain(string[] args) {
     /* } */
 
     /* window.mainWidget = lifegame; */
-    window.mainWidget = new GameWindow( lifesc.x, lifesc.y);
+    window.mainWidget = new GameWindow(lifesc.x, lifesc.y);
     window.show;
 
     return Platform.instance.enterMessageLoop();

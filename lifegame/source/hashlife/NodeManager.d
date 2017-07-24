@@ -5,36 +5,43 @@ import std.stdio;
 import hashlife.NodeDraw;
 import hashlife.Node;
 import hashlife.Field;
+import utils;
 
 import dlangui;
+import memutils.hashmap;
 
-class NodeManager : Widget{
+class NodeManager : Widget {
     Node _node;
     Node[] emp;
     NodeDraw drawer;
-    Node[ulong][ulong] memo;
-    Node[ulong][ulong][ulong] memoPow2;
-    public Field field;
+    Node[Node][Node.MOD] memo;
+    Node[Node][Node.MOD] memoPow2;
     int speed;
 
-    this(Node n,int sizex,int sizey){
-        _node = n;
-        int size = 1<<(n.height);
-        field = new Field(size,sizex,sizey);
-        setFieldToNode();
-
-        auto start = field.getSize()/4;
-        auto cellsize = field.getCellSize();
-        drawer = new NodeDraw(_node.height,start,cellsize);
-        
+    this(int sizex, int sizey){
         initEmpNode();
-        speed = 4;
+        Node.emp = emp;
+        int size = 1 << (Node.height);
+        _node = extendNode(createField());
+
+        int start = size / 4;
+        int cellsize = max(2 * min(sizex, sizey) / size, 1);
+        int screenSize = max(sizex, sizey);
+        drawer = new NodeDraw(_node.height, screenSize, cellsize);
+        
+        speed = 0;
     }
 
     void initEmpNode(){
         int templevel = 0;
-        foreach(i; 0.._node.height){
-            emp ~= new Node(i+1);
+        foreach(i; 0.._node.height+2){
+            emp ~= createEmpNode(i);
+        }
+        foreach(i; 1.._node.height+2){
+            emp[i-1].nw = emp[i];
+            emp[i-1].ne = emp[i];
+            emp[i-1].sw = emp[i];
+            emp[i-1].se = emp[i];
         }
     }
 
@@ -42,53 +49,54 @@ class NodeManager : Widget{
         return true;
     }
 
+    int abc = 0;
     override void onDraw(DrawBuf buf){
         drawer.draw(_node, buf);
         update();
+        writef("update: %d\n", abc++);
     }
 
     void update(){
         _node = nextGen(_node, speed);
-        extendNode();
+        _node = extendNode(_node);
     }
 
-    void setFieldToNode(){
-        int row = field.getSize();
-        int col = field.getSize();
-        recSetFieldToNode(_node,-1,col-1,-1,row-1);
-        _node.calcHash1(true);
-        _node.calcHash2(true);
+    string[] metaPix;
+    Node createField() {
+        int row = 2048;
+        int col = 2048;
+        metaPix = parse("otcametapixel.rle", 2058, 2058);
+        Node onNode = recSetFieldToNode(2, 0, col-1 , 0, row-1);
+
+        metaPix = parse("otcametapixeloff.rle", 2058, 2058);
+        Node offNode = recSetFieldToNode(2, 0, col-1 , 0, row-1);
+
+        return createNode(onNode, offNode, onNode, onNode);
     }
 
-    void recSetFieldToNode(Node n,int x1,int x2,int y1,int y2){
-        if(n.level < n.height){
-            recSetFieldToNode(n.nw,x1,(x1+x2)/2,y1,(y1+y2)/2);
-            recSetFieldToNode(n.ne,(x1+x2)/2,x2,y1,(y1+y2)/2);
-            recSetFieldToNode(n.sw,x1,(x1+x2)/2,(y1+y2)/2,y2);
-            recSetFieldToNode(n.se,(x1+x2)/2,x2,(y1+y2)/2,y2);
+    Node recSetFieldToNode(int level, int x1, int x2, int y1, int y2){
+        if(level < Node.height-1){
+            Node n = new Node(level, false);
+            n.nw = recSetFieldToNode(level+1, x1, (x1+x2)/2, y1, (y1+y2)/2);
+            n.ne = recSetFieldToNode(level+1, (x1+x2+1)/2, x2, y1, (y1+y2)/2);
+            n.sw = recSetFieldToNode(level+1, x1, (x1+x2)/2, (y1+y2+1)/2, y2);
+            n.se = recSetFieldToNode(level+1, (x1+x2+1)/2, x2, (y1+y2+1)/2, y2);
+            n.calcHash(true);
+            return optimize(n);
         }else{
-            assert(x2-x1==1 && y2-y1==1,"Index is incoreect.");
-            assert(n.height == n.level,"Height and length are different.");
-            n.cell = field.getCell(x2,y2);
-        }
-    }
-
-    void setNodeToField(){
-        int row = field.getSize();
-        int col = field.getSize();
-        recSetNodeToField(_node,0,col-1,0,row-1);
-    }
-
-    void recSetNodeToField(Node n,int x1,int x2,int y1,int y2){
-        if(n.level < n.height){
-            recSetNodeToField(n.nw,x1,(x1+x2)/2,y1,(y1+y2)/2);
-            recSetNodeToField(n.ne,(x1+x2+1)/2,x2,y1,(y1+y2)/2);
-            recSetNodeToField(n.sw,x1,(x1+x2)/2,(y1+y2+1)/2,y2);
-            recSetNodeToField(n.se,(x1+x2+1)/2,x2,(y1+y2+1)/2,y2);
-        }else{
-            assert(x1==x2 && y1==y2,"Index is incoreect.");
-            assert(n.height == n.level,"Height and length are different.");
-            field.setCell(x1,y1,n.cell);
+            /* assert(x1==x2-1 && y1==y2-1, "Index is incoreect."); */
+            /* assert(Node.height-1 == level, "Height and length are different."); */
+            int ny1 = y1;
+            int ny2 = y2;
+            int nx1 = x1;
+            int nx2 = x2;
+            byte nw = metaPix[ny1][nx1] == 'o' ? 1 : 0;
+            byte ne = metaPix[ny1][nx2] == 'o' ? 1 : 0;
+            byte sw = metaPix[ny2][nx1] == 'o' ? 1 : 0;
+            byte se = metaPix[ny2][nx2] == 'o' ? 1 : 0;
+            Node n = createLeaf(nw << 3 | ne << 2 | sw << 1 | se << 0);
+            n.calcHash(true);
+            return optimize(n);
         }
     }
 
@@ -98,28 +106,24 @@ class NodeManager : Widget{
                 ne.level == sw.level &&
                 sw.level == se.level , "nodes level are different" );
         int level = nw.level;
-        bool isInit = false;
-        bool isForce = false;
-        Node ret = new Node(level - 1, isInit);
+        Node ret = new Node(level - 1, false);
         ret.nw = nw;
         ret.ne = ne;
         ret.sw = sw;
         ret.se = se;
 
-        ret.calcHash1(isForce);
-        ret.calcHash2(isForce);
-        return ret;
+        ret.calcHash(false);
+        return optimize(ret);
     }
 
     Node createLeaf(int cells){
         Node ret = new Node(_node.height-1);
-        ret.nw.cell = cells >> 3;
+        ret.nw.cell = (cells >> 3).to!byte();
         ret.ne.cell = cells >> 2 & 1;
         ret.sw.cell = cells >> 1 & 1;
         ret.se.cell = cells & 1;
 
-        ret.calcHash1(true);
-        ret.calcHash2(true);
+        ret.calcHash(true);
         return ret;
     }
 
@@ -127,22 +131,22 @@ class NodeManager : Widget{
         return new Node(level, false);
     }
 
-    void extendNode(){
-        int level = _node.level;
+    Node extendNode(Node n){
+        int level = n.level;
         Node pEmp = createEmpNode(0);
-        pEmp.nw = createNode(emp[level],emp[level],emp[level],_node.nw);
-        pEmp.ne = createNode(emp[level],emp[level],_node.ne,emp[level]);
-        pEmp.sw = createNode(emp[level],_node.sw,emp[level],emp[level]);
-        pEmp.se = createNode(_node.se,emp[level],emp[level],emp[level]);
+        pEmp.nw = createNode(emp[level+1], emp[level+1], emp[level+1], n.nw);
+        pEmp.ne = createNode(emp[level+1], emp[level+1], n.ne, emp[level+1]);
+        pEmp.sw = createNode(emp[level+1], n.sw, emp[level+1], emp[level+1]);
+        pEmp.se = createNode(n.se, emp[level+1], emp[level+1], emp[level+1]);
 
-        _node = pEmp;
-        _node.calcHash1(true);
-        _node.calcHash2(true);
+        n = pEmp;
+        n.calcHash();
+        return optimize(n);
     }
 
     Node centeredSubnode(Node node){
         with(node) {
-            return createNode( nw.se, ne.sw, sw.ne, se.nw);
+            return createNode(nw.se, ne.sw, sw.ne, se.nw);
         }
     }
 
@@ -160,13 +164,11 @@ class NodeManager : Widget{
         }
     }
 
-    Node nextGen(Node node,int speed){
+    Node nextGen(Node node, int speed){
         
         if(this._node.height-node.level == 2){ 
-            if(node.getHash1() in memo &&
-                    node.getHash2() in memo[node.getHash1()]){
-                return memo[node.getHash1()][node.getHash2()];
-            }
+            if(node in memo[node.getHash()])
+                return memo[node.getHash()][node];
 
             int p00 = node.nw.nw.cell;
             int p01 = node.nw.ne.cell;
@@ -233,17 +235,17 @@ class NodeManager : Widget{
             s2 = ( s1 & downright ) ^ s2;
             s1 = s1 ^ downright;
 
-            int ss3 = ~s3&s2&s1;
-            int ss2 = ~s3&s2&(~s1);
-            return memo[node.getHash1()][node.getHash2()] = createLeaf((ss2 & p) | ss3);
+            int ss3 = ~s3 & s2 & s1;
+            int ss2 = ~s3 & s2 & (~s1);
+            Node next = createLeaf((ss2 & p) | ss3);
+            return memo[node.getHash()][node] = optimize(next);
 
         }else{
             Node next;
-            if(this._node.height-node.level > 2+speed){
-                if(node.getHash1() in memo &&
-                        node.getHash2() in memo[node.getHash1()]) {
-                    return memo[node.getHash1()][node.getHash2()];
-                }
+            if(this._node.height-node.level > 2 + speed){
+                if(node in memo[node.getHash()])
+                    return memo[node.getHash()][node];
+
                 with(node){
                     Node    n00 = centeredSubnode(nw),
                             n01 = centeredHorizontal(nw, ne),
@@ -254,23 +256,21 @@ class NodeManager : Widget{
                             n12 = centeredVertical(ne, se),
 
                             n20 = centeredSubnode(sw),
-                            n21 = centeredHorizontal(sw,se),
+                            n21 = centeredHorizontal(sw, se),
                             n22 = centeredSubnode(se);
 
                     next =  createNode(
-                            nextGen(createNode(n00, n01, n10, n11) ,speed),
-                            nextGen(createNode(n01, n02, n11, n12) ,speed),
-                            nextGen(createNode(n10, n11, n20, n21) ,speed),
-                            nextGen(createNode(n11, n12, n21, n22) ,speed)
+                                nextGen(createNode(n00, n01, n10, n11) ,speed),
+                                nextGen(createNode(n01, n02, n11, n12) ,speed),
+                                nextGen(createNode(n10, n11, n20, n21) ,speed),
+                                nextGen(createNode(n11, n12, n21, n22) ,speed)
                             );
                 }
-                return memo[node.getHash1()][node.getHash2()] = next;
+                return memo[node.getHash()][node] = next;
             }else{
-                if(node.level in memoPow2 &&
-                        node.getHash1() in memoPow2[node.level] &&
-                            node.getHash2() in memoPow2[node.level][node.getHash1()]) {
-                    return memoPow2[node.level][node.getHash1()][node.getHash2()];
-                }
+                if(node in memoPow2[node.getHash()])
+                    return memoPow2[node.getHash()][node];
+
                 with(node){
                     Node    n00 = nextGen(nw, speed),
                             n01 = nextGen(createNode(nw.ne,ne.nw,nw.se,ne.sw), speed),
@@ -285,14 +285,14 @@ class NodeManager : Widget{
                             n22 = nextGen(se, speed);
 
                     next =  createNode(
-                            nextGen(createNode(n00, n01, n10, n11), speed),
-                            nextGen(createNode(n01, n02, n11, n12), speed),
-                            nextGen(createNode(n10, n11, n20, n21), speed),
-                            nextGen(createNode(n11, n12, n21, n22), speed)
+                                nextGen(createNode(n00, n01, n10, n11), speed),
+                                nextGen(createNode(n01, n02, n11, n12), speed),
+                                nextGen(createNode(n10, n11, n20, n21), speed),
+                                nextGen(createNode(n11, n12, n21, n22), speed)
                             );
 
                 }
-                return memoPow2[node.level][node.getHash1()][node.getHash2()] = next;
+                return memoPow2[node.getHash()][node] = next;
             }
         }
 

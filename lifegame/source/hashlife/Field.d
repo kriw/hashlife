@@ -61,7 +61,7 @@ class Field{
     }
 
     int getCell(int x,int y){
-        return field[ calcPos(x,y) ];
+        return field[calcPos(x, y)];
     }
 
     void setCell(int x,int y,int c){

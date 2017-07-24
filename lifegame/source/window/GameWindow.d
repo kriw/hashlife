@@ -16,6 +16,6 @@ class GameWindow : FrameLayout {
         /* setting.backgroundColor = 0x000000; */
         /* addChild(setting); */
 
-        addChild( new LifeWindow(width,height) );
+        addChild(new LifeWindow(width, height));
     }
 }
