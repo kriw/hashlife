@@ -2,6 +2,8 @@ Conway's Life Game
 --------------------
 Hashlife algorithm implementation.
 
+![Alt text](./img/lifegame.png?raw=true "lifegame")
+
 ## Requirement
 - dmd  
 - dub  
